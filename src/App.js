@@ -2,16 +2,18 @@ import React, { useEffect, useState } from "react";
 import { onAuthStateChanged, signInWithPopup } from "firebase/auth";
 import { auth, provider } from "./firebase";
 import DashboardPage from "./pages/DashboardPage";
-import { Button, Typography } from "antd";
+import { Button, Typography, Spin, message } from "antd";
 
 const { Title } = Typography;
 
 function App() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -20,10 +22,18 @@ function App() {
     try {
       await signInWithPopup(auth, provider);
     } catch (err) {
-      console.error(err);
-      alert("Login failed. Try again.");
+      console.error("Google Sign-in Error:", err);
+      message.error("Login failed. Please try again.");
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <Spin size="large" tip="Loading..." />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
