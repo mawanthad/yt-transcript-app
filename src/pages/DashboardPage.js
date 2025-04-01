@@ -28,7 +28,9 @@ function DashboardPage({ user }) {
   }, [user]);
 
   const handleScrape = async () => {
-    if (!url) return message.error("Please enter a YouTube URL");
+    if (!url || !url.includes("watch?v=")) {
+      return message.error("Please enter a valid YouTube video URL.");
+    }
 
     message.loading({ content: "Scraping in progress...", key: "scrape" });
 
@@ -43,13 +45,13 @@ function DashboardPage({ user }) {
 
       if (data.status === "success") {
         message.success({
-          content: `🎉 Scraped ${data.count} videos!`,
+          content: `🎉 Scraped 1 video transcript!`,
           key: "scrape",
         });
 
         const record = {
           file: data.file,
-          count: data.count,
+          count: 1,
           createdAt: Date.now(),
           uid: user.uid,
           email: user.email,
@@ -66,13 +68,11 @@ function DashboardPage({ user }) {
         ]);
 
         window.open(`https://yt-backend-5lha.onrender.com/files/${data.file}`, "_blank");
-      } else if (data.status === "no_transcripts") {
-        message.warning({
-          content: "No transcripts found.",
+      } else {
+        message.error({
+          content: `❌ Failed: ${data.message}`,
           key: "scrape",
         });
-      } else {
-        throw new Error(data.message);
       }
     } catch (err) {
       message.error({
@@ -87,7 +87,11 @@ function DashboardPage({ user }) {
       title: "🧾 File",
       dataIndex: "file",
       render: (text) => (
-        <a href={`https://yt-backend-5lha.onrender.com/files/${text}`} target="_blank" rel="noreferrer">
+        <a
+          href={`https://yt-backend-5lha.onrender.com/files/${text}`}
+          target="_blank"
+          rel="noreferrer"
+        >
           {text}
         </a>
       ),
@@ -130,16 +134,16 @@ function DashboardPage({ user }) {
       </Header>
 
       <Content style={{ padding: "2rem" }}>
-        <Title level={4}>Enter YouTube Channel URL or @handle</Title>
+        <Title level={4}>Enter YouTube Video URL</Title>
         <Input
-          placeholder="e.g. https://www.youtube.com/@veritasium"
+          placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           style={{ maxWidth: 600, marginBottom: "1rem" }}
         />
         <br />
         <Button type="primary" onClick={handleScrape}>
-          Scrape Transcripts
+          Scrape Transcript
         </Button>
 
         {history.length > 0 && (
@@ -158,7 +162,3 @@ function DashboardPage({ user }) {
 }
 
 export default DashboardPage;
-
-
-//mawa
-//mawa
